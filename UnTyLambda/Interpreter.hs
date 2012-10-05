@@ -33,8 +33,13 @@ subst t@(Var v)   var what = if v == var then what else t
 subst t@(Lam v b) var what = if v == var then t else Lam v (subst b var what)
 subst (App t t')  var what = App (subst t var what) (subst t' var what)
 
+newname :: [Variable] -> Variable -> Variable 
 newname fv = head . filter (not . flip elem fv) . iterate ('_':)
 
+deny:: [String] -> Term -> Term
+deny d (Var v) = Var $ newname d v
+deny d (Lam v t) = Lam v' $ subst t v (Var v') where v' = newname (d ++ free t) v
+deny d (App t1 t2) = App (deny d t1) (deny d t2)
 --- ...
 
 ------------------------------------------------------------
@@ -48,10 +53,46 @@ wh, no, wa, sa :: Integer -> Term -> Term
 
 -- Редукция аппликативным порядком
 sa 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
-sa n t = undefined
+sa n t 
+    | reduced = sa (n - 1) rest
+    | otherwise = t
+    where (reduced, rest) = saOne t 
+
+saOne :: Term -> (Bool, Term)
+saOne t@(Var v) = (False, t)
+saOne (Lam v t) = (reduced, Lam v rest)
+    where (reduced, rest) = saOne t
+saOne t@(App t1 t2) = if reducedRight
+        then (True, App t1 t2')
+        else case t1 of 
+            (Lam v t1'') -> (True, subst (deny (free t2) t1'') v t2) where
+                (_, t1''') = saOne t1'' 
+            _ -> (reducedLeft, App t1' t2)
+    where 
+        (reducedRight, t2') = saOne t2
+        (reducedLeft, t1') = saOne t1
 
 -- Нормализация нормальным порядком
-no = undefined
+no 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
+no n t 
+    | reduced = no (n - 1) rest
+    | otherwise = t
+    where (reduced, rest) = noOne t
+
+noOne :: Term -> (Bool, Term)
+noOne (App (Lam v t1) t2) = (True, subst (deny (free t2) t1) v t2)
+noOne t@(Var v) = (False, t)
+noOne (Lam v t) = (reduced, Lam v rest) 
+    where (reduced, rest) = noOne t 
+noOne t@(App t1 t2) = if reducedLeft 
+                        then (True, App t1' t2) 
+                        else if reducedRight
+                            then (True, App t1 t2')
+                            else (False, t)
+    where
+        (reducedLeft, t1') = noOne t1
+        (reducedRight, t2') = noOne t2
+        fv = free t2
 
 -- Редукция в слабую головную нормальную форму
 wh = undefined
@@ -82,6 +123,11 @@ testfuncs funcs = mapM_ $ \t -> putStr "===== " >> print t >> pall t funcs
 -- Сюда можно добавлять тесты
 lamxx = Lam "x" $ App (Var "x") (Var "x")
 omega = App lamxx lamxx
+lamid = Lam "x" $ Var "x"
+lamconst = Lam "x" $ Lam "y" $ Var "x"
+ololo = (lamconst `App` lamid) `App` omega
+test1 = Lam "x" $ (Lam "y" $ Var "y") `App` (Var "x")
+test2 = (Lam "x" $ Lam "y" $ Var "x") `App` (Var "y")
 
 test = testfuncs orders
     [ Var "a"
