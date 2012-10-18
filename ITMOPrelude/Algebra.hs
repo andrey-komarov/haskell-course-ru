@@ -65,6 +65,11 @@ instance Monoid Any where
     (Any False) `mappend` (Any False) = Any False
     _ `mappend` _ = Any True
 
+instance Monoid Tri where
+    mzero = EQ
+    EQ `mappend` a = a
+    a `mappend` _ = a
+
 instance Group (Sum Int) where
     ginv = Sum . intNeg . getSum
 
@@ -76,5 +81,4 @@ instance Group (Product Rat) where
 
 instance Group Unit where
     ginv = \_ -> Unit
-
 
