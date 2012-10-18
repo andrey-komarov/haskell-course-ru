@@ -95,7 +95,24 @@ noOne t@(App t1 t2) = if reducedLeft
         fv = free t2
 
 -- Редукция в слабую головную нормальную форму
-wh = undefined
+wh 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
+wh n t 
+    | reduced = wh (n - 1) rest
+    | otherwise = t
+    where (reduced, rest) = whOne t
+
+whOne :: Term -> (Bool, Term)
+whOne (App (Lam v t1) t2) = (True, subst (deny (free t2) t1) v t2)
+whOne t@(App t1 t2) = if reducedLeft 
+                        then (True, App t1' t2) 
+                        else if reducedRight
+                            then (True, App t1 t2')
+                            else (False, t)
+    where
+        (reducedLeft, t1') = whOne t1
+        (reducedRight, t2') = whOne t2
+        fv = free t2
+whOne x = (False, x)
 
 -- (*) (не обязательно) Редукция "слабым" аппликативным порядком.
 -- Отличается от обычного аппликативного тем, что не лезет внутрь
