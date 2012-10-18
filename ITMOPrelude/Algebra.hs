@@ -9,7 +9,7 @@ class Monoid a where
     mappend :: a -> a -> a
 
 class Monoid a => Group a where
-    invert :: a -> a
+    ginv :: a -> a
 
 newtype Sum a = Sum { getSum :: a }
 
@@ -66,15 +66,15 @@ instance Monoid Any where
     _ `mappend` _ = Any True
 
 instance Group (Sum Int) where
-    invert = Sum . intNeg . getSum
+    ginv = Sum . intNeg . getSum
 
 instance Group (Sum Rat) where
-    invert = Sum . ratNeg . getSum
+    ginv = Sum . ratNeg . getSum
 
 instance Group (Product Rat) where
-    invert = Product . ratInv . getProduct 
+    ginv = Product . ratInv . getProduct 
 
 instance Group Unit where
-    invert = \_ -> Unit
+    ginv = \_ -> Unit
 
 
