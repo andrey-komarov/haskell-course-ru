@@ -52,3 +52,8 @@ instance Monad List where
     Nil >>= f = Nil
     Cons a b >>= f = f a ++ (b >>= f)
 
+newtype Kleisli m a b = Kleisli { runKleisli :: a -> m b }
+
+instance Monad m => Category (Kleisli m) where
+    id = Kleisli return
+    f <.> g = Kleisli $ \a -> (runKleisli g) a >>= runKleisli f
