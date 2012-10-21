@@ -22,16 +22,14 @@ instance Functor Maybe where
     f `fmap` Just a = Just $ f a
 
 instance Functor List where
-    f `fmap` Nil = Nil
-    f `fmap` Cons a b = Cons (f a) $ f `fmap` b
+    fmap = map
 
 instance Functor (Either e) where
     f `fmap` Left e = Left e
     f `fmap` Right a = Right $ f a
 
 instance Functor Tree where
-    f `fmap` Leaf = Leaf
-    f `fmap` Node a left right = Node (f a) (f `fmap` left) (f `fmap` right)
+    fmap = tmap
 
 class Functor m => Monad m where
     return :: a -> m a
