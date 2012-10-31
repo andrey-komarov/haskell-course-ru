@@ -1,5 +1,8 @@
 module ITMOPrelude.Tree where
 
+-- Всё что угодно, главное, чтобы соответствовало
+-- заданию
+
 data Tree a = Node a (Tree a) (Tree a) | Leaf
 
 -- Пустое дерево

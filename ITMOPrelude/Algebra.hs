@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {-# LANGUAGE NoImplicitPrelude, FlexibleInstances #-}
 module ITMOPrelude.Algebra where
 
@@ -6,11 +7,29 @@ import ITMOPrelude.List
 
 class Monoid a where
     mzero :: a
+=======
+{-# LANGUAGE NoImplicitPrelude #-}
+module ITMOPredule.Algebra where
+
+-- Реализовать для всего,
+-- что только можно из
+import ITMOPrelude.Primitive
+-- всевозможные инстансы для классов ниже 
+
+-- Если не страшно, то реализуйте их и для
+import ITMOPrelude.List
+import ITMOPrelude.Tree
+
+-- Классы
+class Monoid a where
+    mempty :: a
+>>>>>>> oxij/master
     mappend :: a -> a -> a
 
 class Monoid a => Group a where
     ginv :: a -> a
 
+<<<<<<< HEAD
 newtype Sum a = Sum { getSum :: a }
 
 instance Monoid (Sum Nat) where
@@ -81,4 +100,8 @@ instance Group (Product Rat) where
 
 instance Group Unit where
     ginv = \_ -> Unit
+=======
+-- Инстансы писать сюда
+
+>>>>>>> oxij/master
 
