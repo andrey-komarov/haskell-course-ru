@@ -1,19 +1,21 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude, FlexibleInstances, UndecidableInstances #-}
 module ITMOPrelude.Categories.ToMonadFish where
 import ITMOPrelude.Categories.MonadFish
 
 -- Эти
-import ITMOPrelude.Categories
+import ITMOPrelude.Categories hiding ((.))
 import ITMOPrelude.Categories.MonadJoin
 
+import ITMOPrelude.Primitive (undefined, (.))
+
 -- делаем из нас
-instance MonadFish m => Monad where
-    return = ?
-    f >>= g = ?
+instance MonadFish m => Monad m where
+    return = returnFish
+    f >>= g = (id >=> g) f
 
 instance MonadFish m => Functor m where
-    fmap = ?
+    fmap f a = a >>= (return . f)
 
 instance MonadFish m => MonadJoin m where
-    returnJoin = ?
-    join = ?
+    returnJoin = returnFish 
+    join = id >=> id 

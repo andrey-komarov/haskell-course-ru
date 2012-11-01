@@ -72,5 +72,5 @@ newtype State s a = State { runState :: s -> (s, a) }
 
 instance Monad (State s) where
     return a = State $ \s -> (s, a) 
-    (>>=) = undefined
-
+    x >>= f = State $ \s -> let (s', a) = runState x $ s
+                            in runState (f a) $ s' 
