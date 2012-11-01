@@ -21,11 +21,11 @@ char = like . (==)
 
 -- В голове ввода сейчас что-то из списка
 oneOf :: Eq s => [s] -> Monstupar s s
-oneOf = undefined
+oneOf xs = like (\x -> x `elem` xs)
 
 -- В префиксе головы сейчас нечто вполне определённое
 string :: Eq s => [s] -> Monstupar s [s]
-string = undefined
+string s = foldl (flip char) undefined s
 
 -- "Звёздочка" -- запустить парсер максимальное (ноль или более) число раз и
 -- саккумулировать результыты

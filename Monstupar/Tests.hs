@@ -6,19 +6,23 @@ import Monstupar.Derived
 --------------------------------------------------------------------------------
 -- В помощь хозяйке
 
+mustParse :: [s] -> Monstupar s a -> Bool
 mustParse s p = case runParser p s of
     Left  _ -> False
     Right _ -> True
 
+mustFail :: [s] -> Monstupar s a -> Bool
 mustFail s = not . mustParse s
 
 infixl 2 &.&
+(&.&) :: (a -> Bool) -> (a -> Bool) -> a -> Bool
 (&.&) p1 p2 x = p1 x && p2 x
 
 --------------------------------------------------------------------------------
 -- Тесты
 
 -- Правильная скобочная последовательность
+balPar :: Monstupar Char ()
 balPar = bp >> eof where
     bp = (do
           char '('
