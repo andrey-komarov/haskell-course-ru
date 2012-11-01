@@ -1,5 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude, FlexibleInstances, UndecidableInstances #-}
-module ITMOPrelude.Categories.ToMonad where
+module ITMOPrelude.Categories.FromMonad where
 import ITMOPrelude.Categories hiding ((.))
 
 -- Эти

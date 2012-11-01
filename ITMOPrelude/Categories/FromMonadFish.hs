@@ -1,5 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude, FlexibleInstances, UndecidableInstances #-}
-module ITMOPrelude.Categories.ToMonadFish where
+module ITMOPrelude.Categories.FromMonadFish where
 import ITMOPrelude.Categories.MonadFish
 
 -- Эти
