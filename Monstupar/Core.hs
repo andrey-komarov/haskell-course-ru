@@ -6,6 +6,18 @@ module Monstupar.Core
     , ok, isnot, eof, (<|>), like
     ) where
 
+--import Control.Category
+--newtype Parser a b = Parser { runParser' :: Monstupar a [b] }
+
+--instance Category Parser where
+--    id = Parser $ return []
+-- (.) :: Parser b c -> Parser a b -> Parser a c 
+-- Monstupar b [c] -> Monstupar a [b] -> Monstupar a [c]
+--    (Parser p) . (Parser q) = Parser $ Monstupar $ \s -> 
+--        case runParser q s of 
+--            Left e -> Left e
+--            Right (rest, x) -> runParser p x
+
 --------------------------------------------------------------------------------
 -- Определения
 

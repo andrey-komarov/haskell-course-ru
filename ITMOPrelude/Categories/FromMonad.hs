@@ -19,4 +19,4 @@ instance Monad m => MonadJoin m where
 
 instance Monad m => MonadFish m where
     returnFish = return
-    (f >=> g) a =f a >>= g 
+    (f >=> g) a = f a >>= g 
