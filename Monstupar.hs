@@ -4,7 +4,7 @@ module Monstupar
     , ok, isnot, eof, (<|>), like
     , notok, char, oneOf, string
     , many, many1, optional
-    --- ...
+    , spaces
     ) where
 
 import Monstupar.Core

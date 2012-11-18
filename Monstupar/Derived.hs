@@ -54,3 +54,5 @@ optional p = (do
                 x <- p
                 return $ Just x) <|> return Nothing
 
+spaces :: Monstupar Char ()
+spaces = many (char ' ') >> ok

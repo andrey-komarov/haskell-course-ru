@@ -10,11 +10,24 @@ module UnTyLambda.Interpreter where
 -- использовать обычную Prelude
 import Prelude hiding (catch)
 import Control.Exception
+import Control.Monad.State
+import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 
 ------------------------------------------------------------
 -- Определение дататайпа для нетипизированной лямбды
 type Variable = String
-data Term = Var Variable | Lam Variable Term | App Term Term deriving (Show,Read)
+data Term = Var Variable | Lam Variable Term | App Term Term deriving (Ord)
+
+instance Show Term where
+    show (Var x) = x
+    show (Lam x e) = "\\" ++ x ++ "." ++ show e
+    show (App e1@(Lam _ _) e2) = "(" ++ show e1 ++ ")" ++ show e2
+    show (App e1 (Var v)) = show e1 ++ " " ++ v
+    show (App e1 e2) = show e1 ++ "(" ++ show e2 ++ ")"
+
+
+
 
 ------------------------------------------------------------
 -- Дальше всё на ваше усмотрение
@@ -40,6 +53,45 @@ deny:: [String] -> Term -> Term
 deny d (Var v) = Var $ newname d v
 deny d (Lam v t) = Lam v' $ subst t v (Var v') where v' = newname (d ++ free t) v
 deny d (App t1 t2) = App (deny d t1) (deny d t2)
+unifyBound :: Term -> Term 
+unifyBound e = fst $ runState (unifyBound' e) (M.empty, free e)
+
+unifyBound' :: Term -> State (M.Map Variable Variable, [Variable]) Term
+unifyBound' (Var v) = do
+    (m, used) <- get
+    return $ Var $ fromMaybe v (M.lookup v m)
+unifyBound' e@(App t1 t2) = do
+    t1' <- unifyBound' t1
+    t2' <- unifyBound' t2
+    return $ App t1' t2'
+unifyBound' (Lam x t) = do
+    (m, used) <- get
+    let new = fst $ runState unused used
+    put (M.insert x new m, new:used)
+    e <- unifyBound' t
+    (_, used') <- get
+    put (m, used')
+    return $ Lam new e
+
+eq :: Term -> Term -> Bool
+eq (Var v) (Var v') = v == v'
+eq (Lam v1 e1) (Lam v2 e2) = v1 == v2 && e1 `eq` e2
+eq (App e1 e2) (App e1' e2') = e1 `eq` e1' && e2 `eq` e2'
+eq _ _ = False
+
+instance Eq Term where
+    e1 == e2 = free e1 == free e2 && newE1 `eq` newE2 where
+        newE1 = unifyBound e1
+        newE2 = unifyBound e2
+        fv = free e1
+
+unused :: State [Variable] Variable
+unused = do
+    used <- get
+    let new = head $ filter (not . (`elem` used)) $ map show [1..]
+    put $ new:used
+    return new 
+
 --- ...
 
 ------------------------------------------------------------

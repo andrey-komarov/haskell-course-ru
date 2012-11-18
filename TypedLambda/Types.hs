@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 module TypedLambda.Types where
 
+import UnTyLambda.Interpreter
+
 import Prelude hiding (any)
 import Control.Monad.State
 import qualified Data.Map as M
@@ -12,31 +14,12 @@ infixr 1 :->:
 
 unique = S.toList . S.fromList
 
-type Variable = String
-data Expr
+{-type Variable = String
+data Term
     = Var Variable
-    | Lam Variable Expr
-    | App Expr Expr deriving (Ord)
-
-instance Show Expr where
-    show (Var x) = x
-    show (Lam x e) = "\\" ++ x ++ "." ++ show e
-    show (App e1@(Lam _ _) e2) = "(" ++ show e1 ++ ")" ++ show e2
-    show (App e1 (Var v)) = show e1 ++ " " ++ v
-    show (App e1 e2) = show e1 ++ "(" ++ show e2 ++ ")"
-
-free (Var v)    = [ v ]
-free (Lam v t)  = filter (/= v) . free $ t
-free (App t t') = free t ++ free t'
-
-subst :: Expr -> Variable -> Expr -> Expr
-subst t@(Var v)   var what = if v == var then what else t
-subst t@(Lam v b) var what = if v == var then t else Lam v (subst b var what)
-subst (App t t')  var what = App (subst t var what) (subst t' var what)
-
-newname :: [Variable] -> Variable -> Variable 
-newname fv = head . filter (not . flip elem fv) . iterate ('_':)
-
+    | Lam Variable Term
+    | App Term Term deriving (Ord)
+-}
 type TyVariable = String
 data Type
     = TyVar TyVariable
@@ -47,21 +30,14 @@ instance Show Type where
     show (TyVar v :->: t) = v ++ " -> " ++ show t
     show (t1 :->: t2) = "(" ++ show t1 ++ ") -> " ++ show t2
 
-type Equation = (Expr, Type)
-
-unused :: State [TyVariable] TyVariable
-unused = do
-    used <- get
-    let new = head $ filter (not . (`elem` used)) $ map show [1..]
-    put $ new:used
-    return new 
+type Equation = (Term, Type)
 
 unusedVar = TyVar `fmap` unused
 
-eqsSys :: Expr -> [Equation]
+eqsSys :: Term -> [Equation]
 eqsSys e = fst $ runState (eqsSys' e) []
 
-eqsSys' :: Expr -> State [TyVariable] [Equation]
+eqsSys' :: Term -> State [TyVariable] [Equation]
 eqsSys' e@(Var v) = do 
     var <- unusedVar
     return [(e, var)]
@@ -76,38 +52,6 @@ eqsSys' e@(Lam v e') = do
     b <- unusedVar
     eqs1 <- eqsSys' e'
     return $ [(Var v, a), (e', b), (e, a :->: b)] ++ eqs1
-
-unifyBound :: Expr -> Expr 
-unifyBound e = fst $ runState (unifyBound' e) (M.empty, free e)
-
-unifyBound' :: Expr -> State (M.Map Variable Variable, [TyVariable]) Expr
-unifyBound' (Var v) = do
-    (m, used) <- get
-    return $ Var $ fromMaybe v (M.lookup v m)
-unifyBound' e@(App t1 t2) = do
-    t1' <- unifyBound' t1
-    t2' <- unifyBound' t2
-    return $ App t1' t2'
-unifyBound' (Lam x t) = do
-    (m, used) <- get
-    let new = fst $ runState unused used
-    put (M.insert x new m, new:used)
-    e <- unifyBound' t
-    (_, used') <- get
-    put (m, used')
-    return $ Lam new e
-
-eq :: Expr -> Expr -> Bool
-eq (Var v) (Var v') = v == v'
-eq (Lam v1 e1) (Lam v2 e2) = v1 == v2 && e1 `eq` e2
-eq (App e1 e2) (App e1' e2') = e1 `eq` e1' && e2 `eq` e2'
-eq _ _ = False
-
-instance Eq Expr where
-    e1 == e2 = free e1 == free e2 && newE1 `eq` newE2 where
-        newE1 = unifyBound e1
-        newE2 = unifyBound e2
-        fv = free e1
 
 patchSys :: State [Equation] (Maybe (Type, Type))
 patchSys = do
@@ -130,13 +74,6 @@ patchSys = do
     return $ case fulleqs ++ appeqs ++ lameqs of
         [] -> Nothing
         (x:_) -> Just x
-{-    return $ do
-        ((e1, t1), (e2, t2)) <- 
-            find (\((e1, t1), (e2, t2)) -> e1 == e2 && t1 /= t2) $
-                    [(eq1, eq2) | eq1 <- eqs, eq2 <- eqs]
-            `mappend` 
-            find (\(
-        return $ (t1, t2) -}
 
 replace :: Type -> Type -> Type -> Type
 replace t what to | t == what = to
@@ -170,7 +107,7 @@ solveSys = do
                         else put $ unique $ replaceMany t2 t1 eqs
                     solveSys
                             
-infer :: Expr -> Maybe Type
+infer :: Term -> Maybe Type
 infer e = let 
             newE = unifyBound e 
             (res, types) = runState solveSys $ eqsSys $ unifyBound e
