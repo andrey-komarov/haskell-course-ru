@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 module TypedLambda.Types where
 
-import Data.Foldable hiding (elem)
 import Prelude hiding (any)
 import Control.Monad.State
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Data.Maybe
 import Debug.Trace
 
 infixr 1 :->:
@@ -27,7 +27,7 @@ instance Show Expr where
 
 free (Var v)    = [ v ]
 free (Lam v t)  = filter (/= v) . free $ t
-free (App t t') = (free t) ++ (free t')
+free (App t t') = free t ++ free t'
 
 subst :: Expr -> Variable -> Expr -> Expr
 subst t@(Var v)   var what = if v == var then what else t
@@ -44,7 +44,7 @@ data Type
 
 instance Show Type where
     show (TyVar v) = v
-    show ((TyVar v) :->: t) = v ++ " -> " ++ show t
+    show (TyVar v :->: t) = v ++ " -> " ++ show t
     show (t1 :->: t2) = "(" ++ show t1 ++ ") -> " ++ show t2
 
 type Equation = (Expr, Type)
@@ -83,9 +83,7 @@ unifyBound e = fst $ runState (unifyBound' e) (M.empty, free e)
 unifyBound' :: Expr -> State (M.Map Variable Variable, [TyVariable]) Expr
 unifyBound' (Var v) = do
     (m, used) <- get
-    return $ Var $ case M.lookup v m of
-        Nothing -> v
-        Just v' -> v'
+    return $ Var $ fromMaybe v (M.lookup v m)
 unifyBound' e@(App t1 t2) = do
     t1' <- unifyBound' t1
     t2' <- unifyBound' t2
@@ -93,10 +91,10 @@ unifyBound' e@(App t1 t2) = do
 unifyBound' (Lam x t) = do
     (m, used) <- get
     let new = fst $ runState unused used
-    put $ (M.insert x new m, new:used)
+    put (M.insert x new m, new:used)
     e <- unifyBound' t
     (_, used') <- get
-    put $ (m, used')
+    put (m, used')
     return $ Lam new e
 
 eq :: Expr -> Expr -> Bool
@@ -118,17 +116,17 @@ patchSys = do
                     (e1, t1) <- eqs
                     (e2, t2) <- eqs
                     True <- return $ e1 == e2 && t1 /= t2
-                    return $ (t1, t2)
+                    return (t1, t2)
     let appeqs = do
                     (App a b, t1) <- eqs
                     (c, t2 :->: t3) <- eqs
                     True <- return $ a == c && t1 /= t3
-                    return $ (t1, t3)
+                    return (t1, t3)
     let lameqs = do
                     (Lam x e, t1 :->: t2) <- eqs
                     (Var x', t3) <- eqs
                     True <- return $ x == x' && t1 /= t3
-                    return $ (t1, t3)
+                    return (t1, t3)
     return $ case fulleqs ++ appeqs ++ lameqs of
         [] -> Nothing
         (x:_) -> Just x
@@ -176,9 +174,9 @@ infer :: Expr -> Maybe Type
 infer e = let 
             newE = unifyBound e 
             (res, types) = runState solveSys $ eqsSys $ unifyBound e
-          in case res of
-                False -> Nothing
-                True -> lookup newE types
+          in if res  
+                then lookup newE types
+                else Nothing
 
 -- \f.\x.\y.f y x
 lflip = Lam "f" $ Lam "x" $ Lam "y" $ App (App (Var "f") (Var "y")) (Var "x")
