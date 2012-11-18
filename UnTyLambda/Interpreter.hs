@@ -28,7 +28,6 @@ instance Show Term where
 
 
 
-
 ------------------------------------------------------------
 -- Дальше всё на ваше усмотрение
 
@@ -53,6 +52,7 @@ deny:: [String] -> Term -> Term
 deny d (Var v) = Var $ newname d v
 deny d (Lam v t) = Lam v' $ subst t v (Var v') where v' = newname (d ++ free t) v
 deny d (App t1 t2) = App (deny d t1) (deny d t2)
+
 unifyBound :: Term -> Term 
 unifyBound e = fst $ runState (unifyBound' e) (M.empty, free e)
 
@@ -104,8 +104,10 @@ unused = do
 wh, no, wa, sa :: Integer -> Term -> Term
 
 -- Редукция аппликативным порядком
-sa 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
-sa n t 
+sa n t = sa' n $ unifyBound t
+
+sa' 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
+sa' n t 
     | reduced = sa (n - 1) rest
     | otherwise = t
     where (reduced, rest) = saOne t 
@@ -125,8 +127,10 @@ saOne t@(App t1 t2) = if reducedRight
         (reducedLeft, t1') = saOne t1
 
 -- Нормализация нормальным порядком
-no 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
-no n t 
+no n t = no' n (unifyBound t)
+
+no' 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
+no' n t 
     | reduced = no (n - 1) rest
     | otherwise = t
     where (reduced, rest) = noOne t
@@ -147,8 +151,10 @@ noOne t@(App t1 t2) = if reducedLeft
         fv = free t2
 
 -- Редукция в слабую головную нормальную форму
-wh 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
-wh n t 
+wh n t = wh' n $ unifyBound t
+
+wh' 0 t = error $ "Too long sequence at [" ++ show t ++ "]"
+wh' n t 
     | reduced = wh (n - 1) rest
     | otherwise = t
     where (reduced, rest) = whOne t
@@ -194,6 +200,7 @@ lamxx = Lam "x" $ App (Var "x") (Var "x")
 omega = App lamxx lamxx
 lamid = Lam "x" $ Var "x"
 lamconst = Lam "x" $ Lam "y" $ Var "x"
+lamx = Lam "x" (Var "x") `App` Var "x"
 ololo = (lamconst `App` lamid) `App` omega
 test1 = Lam "x" $ (Lam "y" $ Var "y") `App` (Var "x")
 test2 = (Lam "x" $ Lam "y" $ Var "x") `App` (Var "y")
