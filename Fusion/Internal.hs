@@ -25,10 +25,12 @@ data Step s a = Done
 
 data Stream a = forall s . Stream (s -> Step s a) !s
 
+{-
 instance (Show a) => Show (Step s a) where
     show Done = "Done"
     show (Skip _) = "Skip"
     show (Yield a _) = "Yield " ++ show a
+-}
 
 empty :: Stream a
 empty = Stream (\_ -> Done) ()

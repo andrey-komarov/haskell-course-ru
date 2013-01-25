@@ -21,8 +21,8 @@ newtonStep f df x = x - f x / df x
 
 findRoot :: Double -> (Double -> Double) -> Double -> Double
 findRoot eps f x0 = 
-    F.last $ F.takeWhile' ( (> eps) . abs . f )
-                       $ F.iterate (newtonStep f (derivative 0.001 f)) x0
+    F.last $! F.takeWhile' ( (> eps) . abs . f )
+                       $! F.iterate (newtonStep f (derivative 0.001 f)) x0
 {-# INLINE [0] findRoot #-}
 
 {- approx :: Double -> Double -> Double -> (Double -> Double) -> Stream Double

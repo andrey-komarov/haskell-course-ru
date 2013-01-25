@@ -1,0 +1,653 @@
+[1 of 4] Compiling Fusion.Internal  ( ../Fusion/Internal.hs, ../Fusion/Internal.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 58, types: 85, coercions: 0}
+
+$WStream
+$WStream =
+  \ @ a_aeU @ s_aeV tpl_B1 tpl_B2 ->
+    case tpl_B2 of tpl_X7 { __DEFAULT -> Stream tpl_B1 tpl_X7 }
+
+$WSkip
+$WSkip =
+  \ @ s_aeW @ a_aeX tpl_B1 ->
+    case tpl_B1 of tpl_X5 { __DEFAULT -> Skip tpl_X5 }
+
+$WYield
+$WYield =
+  \ @ s_aeW @ a_aeX tpl_B1 tpl_B2 ->
+    case tpl_B1 of tpl_X6 { __DEFAULT ->
+    case tpl_B2 of tpl_X8 { __DEFAULT -> Yield tpl_X6 tpl_X8 }
+    }
+
+$W:*:
+$W:*: =
+  \ @ a_aeY @ b_aeZ tpl_B1 tpl_B2 ->
+    case tpl_B1 of tpl_X6 { __DEFAULT ->
+    case tpl_B2 of tpl_X8 { __DEFAULT -> :*: tpl_X6 tpl_X8 }
+    }
+
+$WJ
+$WJ =
+  \ @ a_af0 tpl_B1 -> case tpl_B1 of tpl_X4 { __DEFAULT -> J tpl_X4 }
+
+a_rfE
+a_rfE = \ @ a_m _ -> Done
+
+empty
+empty = \ @ a_m -> Stream (a_rfE) ()
+
+
+
+[2 of 4] Compiling Fusion.Common    ( ../Fusion/Common.hs, ../Fusion/Common.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 119, types: 143, coercions: 0}
+
+iterate
+iterate =
+  \ @ a_c eta_B2 eta1_B1 ->
+    case eta1_B1 of tpl_X7 { __DEFAULT ->
+    let {
+      next_spW
+      next_spW =
+        \ eta2_Xk ->
+          case eta2_Xk of x_Xms { __DEFAULT ->
+          case eta_B2 x_Xms of tpl1_X8 { __DEFAULT -> Yield x_Xms tpl1_X8 }
+          } } in
+    Stream next_spW tpl_X7
+    }
+
+takeWhile'
+takeWhile' =
+  \ @ a_g eta_B2 eta1_B1 ->
+    case eta1_B1 of _ { Stream @ s_amq next_am9 s_ama ->
+    let {
+      next'_spU
+      next'_spU =
+        \ eta2_Xc ->
+          case eta2_Xc of _ { (c_amc, s1_amd) ->
+          case next_am9 s1_amd of _ {
+            Done -> Done;
+            Skip s'_ame -> Skip (c_amc, s'_ame);
+            Yield x_amf s'_amg ->
+              case eta_B2 x_amf of _ {
+                False ->
+                  case c_amc of _ {
+                    S1 -> Yield x_amf (S2, s'_amg);
+                    S2 -> Done
+                  };
+                True -> Yield x_amf (c_amc, s'_amg)
+              }
+          }
+          } } in
+    Stream next'_spU (S1, s_ama)
+    }
+
+lvl_rxr
+lvl_rxr = unpackCString# "there is no last of empty stream"
+
+lvl1_rxs
+lvl1_rxs = \ @ a_j -> error lvl_rxr
+
+last
+last =
+  \ @ a_j eta_B1 ->
+    case eta_B1 of _ { Stream @ s_amv next_alU s_alV ->
+    letrec {
+      last''_svb
+      last''_svb =
+        \ x_am3 s1_am4 ->
+          case x_am3 of x1_Xm7 { __DEFAULT ->
+          case s1_am4 of s2_Xm9 { __DEFAULT ->
+          case next_alU s2_Xm9 of _ {
+            Done -> x1_Xm7;
+            Skip s'_am5 -> last''_svb x1_Xm7 s'_am5;
+            Yield x'_am6 s'_am7 -> last''_svb x'_am6 s'_am7
+          }
+          }
+          }; } in
+    letrec {
+      last'_amz
+      last'_amz =
+        \ s1_alY ->
+          case s1_alY of s2_Xm1 { __DEFAULT ->
+          case next_alU s2_Xm1 of _ {
+            Done -> lvl1_rxs;
+            Skip s'_am0 -> last'_amz s'_am0;
+            Yield x_am1 s'_am2 -> last''_svb x_am1 s'_am2
+          }
+          }; } in
+    last'_amz s_alV
+    }
+
+
+
+[3 of 4] Compiling Fusion.Newton    ( ../Fusion/Newton.hs, ../Fusion/Newton.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 780, types: 221, coercions: 0}
+
+findRoot
+findRoot =
+  \ eta_B3 eta1_B2 eta2_B1 ->
+    case eta2_B1 of tpl_X7 { D# ipv_sVR ->
+    case eta1_B2 tpl_X7 of _ { D# x_aMr ->
+    case eta1_B2 (D# (+## ipv_sVR 1.0e-3)) of _ { D# x1_XMR ->
+    case eta1_B2 (D# (-## ipv_sVR 1.0e-3)) of _ { D# y_aLZ ->
+    case eta1_B2 tpl_X7 of _ { D# x2_aNn ->
+    let {
+      $s$w$j_s1aG
+      $s$w$j_s1aG =
+        \ sc_s191 sc1_s193 ->
+          case eta1_B2 (D# sc1_s193) of _ { D# x3_XO5 ->
+          case eta1_B2 (D# (+## sc1_s193 1.0e-3)) of _ { D# x4_XNF ->
+          case eta1_B2 (D# (-## sc1_s193 1.0e-3)) of _ { D# y1_XNM ->
+          case eta1_B2 (D# sc1_s193) of _ { D# x5_XPn ->
+          case /## x3_XO5 (/## (-## x4_XNF y1_XNM) 2.0e-3)
+          of wild8_XOq { __DEFAULT ->
+          case >=## x5_XPn 0.0 of _ {
+            False ->
+              case eta_B3 of _ { D# y2_aNi ->
+              case >## (negateDouble# x5_XPn) y2_aNi of _ {
+                False -> sc_s191;
+                True ->
+                  letrec {
+                    $s$wlast''_s1aH
+                    $s$wlast''_s1aH =
+                      \ sc2_s19c sc3_s19d ->
+                        case eta1_B2 (D# sc3_s19d) of _ { D# x6_XP9 ->
+                        case eta1_B2 (D# (+## sc3_s19d 1.0e-3)) of _ { D# x7_XOM ->
+                        case eta1_B2 (D# (-## sc3_s19d 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 (D# sc3_s19d) of _ { D# x8_XQA ->
+                        case /## x6_XP9 (/## (-## x7_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x8_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQA) y2_aNi of _ {
+                              False -> sc2_s19c;
+                              True -> $s$wlast''_s1aH sc3_s19d (-## sc3_s19d wild16_XPF)
+                            };
+                          True ->
+                            case >## x8_XQA y2_aNi of _ {
+                              False -> sc2_s19c;
+                              True -> $s$wlast''_s1aH sc3_s19d (-## sc3_s19d wild16_XPF)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aH sc1_s193 (-## sc1_s193 wild8_XOq)
+              }
+              };
+            True ->
+              case eta_B3 of _ { D# y2_aNi ->
+              case >## x5_XPn y2_aNi of _ {
+                False -> sc_s191;
+                True ->
+                  letrec {
+                    $s$wlast''_s1aI
+                    $s$wlast''_s1aI =
+                      \ sc2_s19p sc3_s19q ->
+                        case eta1_B2 (D# sc3_s19q) of _ { D# x6_XP9 ->
+                        case eta1_B2 (D# (+## sc3_s19q 1.0e-3)) of _ { D# x7_XOM ->
+                        case eta1_B2 (D# (-## sc3_s19q 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 (D# sc3_s19q) of _ { D# x8_XQA ->
+                        case /## x6_XP9 (/## (-## x7_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x8_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQA) y2_aNi of _ {
+                              False -> sc2_s19p;
+                              True -> $s$wlast''_s1aI sc3_s19q (-## sc3_s19q wild16_XPF)
+                            };
+                          True ->
+                            case >## x8_XQA y2_aNi of _ {
+                              False -> sc2_s19p;
+                              True -> $s$wlast''_s1aI sc3_s19q (-## sc3_s19q wild16_XPF)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aI sc1_s193 (-## sc1_s193 wild8_XOq)
+              }
+              }
+          }
+          }
+          }
+          }
+          }
+          } } in
+    let {
+      $s$w$j1_s1aJ
+      $s$w$j1_s1aJ =
+        \ _ sc1_s192 ->
+          case eta1_B2 (D# sc1_s192) of _ { D# x3_XO5 ->
+          case eta1_B2 (D# (+## sc1_s192 1.0e-3)) of _ { D# x4_XNF ->
+          case eta1_B2 (D# (-## sc1_s192 1.0e-3)) of _ { D# y1_XNM ->
+          case eta1_B2 (D# sc1_s192) of _ { D# x5_XPn ->
+          case /## x3_XO5 (/## (-## x4_XNF y1_XNM) 2.0e-3)
+          of wild8_XOq { __DEFAULT ->
+          case >=## x5_XPn 0.0 of _ {
+            False ->
+              case eta_B3 of _ { D# y2_aNi ->
+              case >## (negateDouble# x5_XPn) y2_aNi of _ {
+                False ->
+                  letrec {
+                    $s$wlast''_s1aK
+                    $s$wlast''_s1aK =
+                      \ sc2_s19D sc3_s19E ->
+                        case eta1_B2 (D# sc3_s19E) of _ { D# x6_XPc ->
+                        case eta1_B2 (D# (+## sc3_s19E 1.0e-3)) of _ { D# x7_XOP ->
+                        case eta1_B2 (D# (-## sc3_s19E 1.0e-3)) of _ { D# y3_XOZ ->
+                        case eta1_B2 (D# sc3_s19E) of _ { D# x8_XQD ->
+                        case /## x6_XPc (/## (-## x7_XOP y3_XOZ) 2.0e-3)
+                        of wild16_XPI { __DEFAULT ->
+                        case >=## x8_XQD 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQD) y2_aNi of _ {
+                              False -> sc2_s19D;
+                              True -> $s$wlast''_s1aK sc3_s19E (-## sc3_s19E wild16_XPI)
+                            };
+                          True ->
+                            case >## x8_XQD y2_aNi of _ {
+                              False -> sc2_s19D;
+                              True -> $s$wlast''_s1aK sc3_s19E (-## sc3_s19E wild16_XPI)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aK sc1_s192 (-## sc1_s192 wild8_XOq);
+                True ->
+                  letrec {
+                    $s$wlast''_s1aL
+                    $s$wlast''_s1aL =
+                      \ _ sc3_s19R ->
+                        case eta1_B2 (D# sc3_s19R) of _ { D# x6_XP9 ->
+                        case eta1_B2 (D# (+## sc3_s19R 1.0e-3)) of _ { D# x7_XOM ->
+                        case eta1_B2 (D# (-## sc3_s19R 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 (D# sc3_s19R) of _ { D# x8_XQA ->
+                        case /## x6_XP9 (/## (-## x7_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x8_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQA) y2_aNi of _ {
+                              False -> $wlast''_s10O sc3_s19R S2 (D# (-## sc3_s19R wild16_XPF));
+                              True -> $s$wlast''_s1aL sc3_s19R (-## sc3_s19R wild16_XPF)
+                            };
+                          True ->
+                            case >## x8_XQA y2_aNi of _ {
+                              False -> $wlast''_s10O sc3_s19R S2 (D# (-## sc3_s19R wild16_XPF));
+                              True -> $s$wlast''_s1aL sc3_s19R (-## sc3_s19R wild16_XPF)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        };
+                    $wlast''_s10O
+                    $wlast''_s10O =
+                      \ ww_X11i ww1_X11n ww2_X11p ->
+                        case ww2_X11p of x6_XoS { D# ipv1_XYj ->
+                        case eta1_B2 x6_XoS of _ { D# x7_XP9 ->
+                        case eta1_B2 (D# (+## ipv1_XYj 1.0e-3)) of _ { D# x8_XOM ->
+                        case eta1_B2 (D# (-## ipv1_XYj 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 x6_XoS of _ { D# x9_XQA ->
+                        case /## x7_XP9 (/## (-## x8_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x9_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x9_XQA) y2_aNi of _ {
+                              False ->
+                                case ww1_X11n of _ {
+                                  S1 -> $wlast''_s10O ipv1_XYj S2 (D# (-## ipv1_XYj wild16_XPF));
+                                  S2 -> ww_X11i
+                                };
+                              True ->
+                                $wlast''_s10O ipv1_XYj ww1_X11n (D# (-## ipv1_XYj wild16_XPF))
+                            };
+                          True ->
+                            case >## x9_XQA y2_aNi of _ {
+                              False ->
+                                case ww1_X11n of _ {
+                                  S1 -> $wlast''_s10O ipv1_XYj S2 (D# (-## ipv1_XYj wild16_XPF));
+                                  S2 -> ww_X11i
+                                };
+                              True ->
+                                $wlast''_s10O ipv1_XYj ww1_X11n (D# (-## ipv1_XYj wild16_XPF))
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aL sc1_s192 (-## sc1_s192 wild8_XOq)
+              }
+              };
+            True ->
+              case eta_B3 of _ { D# y2_aNi ->
+              case >## x5_XPn y2_aNi of _ {
+                False ->
+                  letrec {
+                    $s$wlast''_s1aM
+                    $s$wlast''_s1aM =
+                      \ sc2_s1ab sc3_s1ac ->
+                        case eta1_B2 (D# sc3_s1ac) of _ { D# x6_XPc ->
+                        case eta1_B2 (D# (+## sc3_s1ac 1.0e-3)) of _ { D# x7_XOP ->
+                        case eta1_B2 (D# (-## sc3_s1ac 1.0e-3)) of _ { D# y3_XOZ ->
+                        case eta1_B2 (D# sc3_s1ac) of _ { D# x8_XQD ->
+                        case /## x6_XPc (/## (-## x7_XOP y3_XOZ) 2.0e-3)
+                        of wild16_XPI { __DEFAULT ->
+                        case >=## x8_XQD 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQD) y2_aNi of _ {
+                              False -> sc2_s1ab;
+                              True -> $s$wlast''_s1aM sc3_s1ac (-## sc3_s1ac wild16_XPI)
+                            };
+                          True ->
+                            case >## x8_XQD y2_aNi of _ {
+                              False -> sc2_s1ab;
+                              True -> $s$wlast''_s1aM sc3_s1ac (-## sc3_s1ac wild16_XPI)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aM sc1_s192 (-## sc1_s192 wild8_XOq);
+                True ->
+                  letrec {
+                    $s$wlast''_s1aN
+                    $s$wlast''_s1aN =
+                      \ _ sc3_s1ap ->
+                        case eta1_B2 (D# sc3_s1ap) of _ { D# x6_XP9 ->
+                        case eta1_B2 (D# (+## sc3_s1ap 1.0e-3)) of _ { D# x7_XOM ->
+                        case eta1_B2 (D# (-## sc3_s1ap 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 (D# sc3_s1ap) of _ { D# x8_XQA ->
+                        case /## x6_XP9 (/## (-## x7_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x8_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x8_XQA) y2_aNi of _ {
+                              False -> $wlast''_s10O sc3_s1ap S2 (D# (-## sc3_s1ap wild16_XPF));
+                              True -> $s$wlast''_s1aN sc3_s1ap (-## sc3_s1ap wild16_XPF)
+                            };
+                          True ->
+                            case >## x8_XQA y2_aNi of _ {
+                              False -> $wlast''_s10O sc3_s1ap S2 (D# (-## sc3_s1ap wild16_XPF));
+                              True -> $s$wlast''_s1aN sc3_s1ap (-## sc3_s1ap wild16_XPF)
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        };
+                    $wlast''_s10O
+                    $wlast''_s10O =
+                      \ ww_X11i ww1_X11n ww2_X11p ->
+                        case ww2_X11p of x6_XoS { D# ipv1_XYj ->
+                        case eta1_B2 x6_XoS of _ { D# x7_XP9 ->
+                        case eta1_B2 (D# (+## ipv1_XYj 1.0e-3)) of _ { D# x8_XOM ->
+                        case eta1_B2 (D# (-## ipv1_XYj 1.0e-3)) of _ { D# y3_XOW ->
+                        case eta1_B2 x6_XoS of _ { D# x9_XQA ->
+                        case /## x7_XP9 (/## (-## x8_XOM y3_XOW) 2.0e-3)
+                        of wild16_XPF { __DEFAULT ->
+                        case >=## x9_XQA 0.0 of _ {
+                          False ->
+                            case >## (negateDouble# x9_XQA) y2_aNi of _ {
+                              False ->
+                                case ww1_X11n of _ {
+                                  S1 -> $wlast''_s10O ipv1_XYj S2 (D# (-## ipv1_XYj wild16_XPF));
+                                  S2 -> ww_X11i
+                                };
+                              True ->
+                                $wlast''_s10O ipv1_XYj ww1_X11n (D# (-## ipv1_XYj wild16_XPF))
+                            };
+                          True ->
+                            case >## x9_XQA y2_aNi of _ {
+                              False ->
+                                case ww1_X11n of _ {
+                                  S1 -> $wlast''_s10O ipv1_XYj S2 (D# (-## ipv1_XYj wild16_XPF));
+                                  S2 -> ww_X11i
+                                };
+                              True ->
+                                $wlast''_s10O ipv1_XYj ww1_X11n (D# (-## ipv1_XYj wild16_XPF))
+                            }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }
+                        }; } in
+                  $s$wlast''_s1aN sc1_s192 (-## sc1_s192 wild8_XOq)
+              }
+              }
+          }
+          }
+          }
+          }
+          }
+          } } in
+    case /## x_aMr (/## (-## x1_XMR y_aLZ) 2.0e-3)
+    of wild4_XNC { __DEFAULT ->
+    case >=## x2_aNn 0.0 of _ {
+      False ->
+        case eta_B3 of _ { D# y1_aNi ->
+        case >## (negateDouble# x2_aNn) y1_aNi of _ {
+          False ->
+            case $s$w$j_s1aG ipv_sVR (-## ipv_sVR wild4_XNC)
+            of ww_s10L { __DEFAULT ->
+            D# ww_s10L
+            };
+          True ->
+            case $s$w$j1_s1aJ ipv_sVR (-## ipv_sVR wild4_XNC)
+            of ww_s10L { __DEFAULT ->
+            D# ww_s10L
+            }
+        }
+        };
+      True ->
+        case eta_B3 of _ { D# y1_aNi ->
+        case >## x2_aNn y1_aNi of _ {
+          False ->
+            case $s$w$j_s1aG ipv_sVR (-## ipv_sVR wild4_XNC)
+            of ww_s10L { __DEFAULT ->
+            D# ww_s10L
+            };
+          True ->
+            case $s$w$j1_s1aJ ipv_sVR (-## ipv_sVR wild4_XNC)
+            of ww_s10L { __DEFAULT ->
+            D# ww_s10L
+            }
+        }
+        }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+
+
+
+[4 of 4] Compiling Main             ( Main.hs, Main.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 307, types: 154, coercions: 12}
+
+lvl_r3Ep
+lvl_r3Ep = D# 10.0
+
+lvl1_r3Eq
+lvl1_r3Eq = D# 9.999
+
+lvl2_r3Er
+lvl2_r3Er = D# 10.001
+
+main5
+main5 =
+  \ f_a23l eta_a2fo ->
+    hPutStr2
+      stdout
+      (unpackAppendCString#
+         "f "
+         (case f_a23l lvl_r3Ep of _ { D# x_aMr ->
+          case f_a23l lvl2_r3Er of _ { D# x1_XMN ->
+          case f_a23l lvl1_r3Eq of _ { D# y_aLZ ->
+          let {
+            $j_s3xw
+            $j_s3xw =
+              \ ww_a3wo w_X3wq ->
+                ++
+                  ($w$sshowSignedFloat $fShowDouble_$sshowFloat shows26 ww_a3wo ([]))
+                  (unpackAppendCString#
+                     " = "
+                     (case f_a23l w_X3wq of _ { D# ww1_X3wH ->
+                      $w$sshowSignedFloat $fShowDouble_$sshowFloat shows26 ww1_X3wH ([])
+                      })) } in
+          letrec {
+            $s$wlast''_s3CZ
+            $s$wlast''_s3CZ =
+              \ sc_s3Ck sc1_s3Cm ->
+                case f_a23l (D# sc1_s3Cm) of _ { D# x6_XNY ->
+                case f_a23l (D# (+## sc1_s3Cm 1.0e-3)) of _ { D# x7_XPb ->
+                case f_a23l (D# (-## sc1_s3Cm 1.0e-3)) of _ { D# y1_XNF ->
+                case /## x6_XNY (/## (-## x7_XPb y1_XNF) 2.0e-3)
+                of wild7_XOj { __DEFAULT ->
+                case >=## x6_XNY 0.0 of _ {
+                  False ->
+                    case >## (negateDouble# x6_XNY) 1.0e-6 of _ {
+                      False -> sc_s3Ck;
+                      True -> $s$wlast''_s3CZ sc1_s3Cm (-## sc1_s3Cm wild7_XOj)
+                    };
+                  True ->
+                    case >## x6_XNY 1.0e-6 of _ {
+                      False -> sc_s3Ck;
+                      True -> $s$wlast''_s3CZ sc1_s3Cm (-## sc1_s3Cm wild7_XOj)
+                    }
+                }
+                }
+                }
+                }
+                }; } in
+          letrec {
+            $s$wlast''1_s3D0
+            $s$wlast''1_s3D0 =
+              \ _ sc1_s3Cl ->
+                case f_a23l (D# sc1_s3Cl) of _ { D# x6_XNY ->
+                case f_a23l (D# (+## sc1_s3Cl 1.0e-3)) of _ { D# x7_XPb ->
+                case f_a23l (D# (-## sc1_s3Cl 1.0e-3)) of _ { D# y1_XNF ->
+                case /## x6_XNY (/## (-## x7_XPb y1_XNF) 2.0e-3)
+                of wild7_XOj { __DEFAULT ->
+                case >=## x6_XNY 0.0 of _ {
+                  False ->
+                    case >## (negateDouble# x6_XNY) 1.0e-6 of _ {
+                      False -> $s$wlast''_s3CZ sc1_s3Cl (-## sc1_s3Cl wild7_XOj);
+                      True -> $s$wlast''1_s3D0 sc1_s3Cl (-## sc1_s3Cl wild7_XOj)
+                    };
+                  True ->
+                    case >## x6_XNY 1.0e-6 of _ {
+                      False -> $s$wlast''_s3CZ sc1_s3Cl (-## sc1_s3Cl wild7_XOj);
+                      True -> $s$wlast''1_s3D0 sc1_s3Cl (-## sc1_s3Cl wild7_XOj)
+                    }
+                }
+                }
+                }
+                }
+                }; } in
+          case /## x_aMr (/## (-## x1_XMN y_aLZ) 2.0e-3)
+          of wild3_XNy { __DEFAULT ->
+          case >=## x_aMr 0.0 of _ {
+            False ->
+              case >## (negateDouble# x_aMr) 1.0e-6 of _ {
+                False ->
+                  case $s$wlast''_s3CZ 10.0 (-## 10.0 wild3_XNy)
+                  of ww_s3yN { __DEFAULT ->
+                  $j_s3xw ww_s3yN (D# ww_s3yN)
+                  };
+                True ->
+                  case $s$wlast''1_s3D0 10.0 (-## 10.0 wild3_XNy)
+                  of ww_s3yN { __DEFAULT ->
+                  $j_s3xw ww_s3yN (D# ww_s3yN)
+                  }
+              };
+            True ->
+              case >## x_aMr 1.0e-6 of _ {
+                False ->
+                  case $s$wlast''_s3CZ 10.0 (-## 10.0 wild3_XNy)
+                  of ww_s3yN { __DEFAULT ->
+                  $j_s3xw ww_s3yN (D# ww_s3yN)
+                  };
+                True ->
+                  case $s$wlast''1_s3D0 10.0 (-## 10.0 wild3_XNy)
+                  of ww_s3yN { __DEFAULT ->
+                  $j_s3xw ww_s3yN (D# ww_s3yN)
+                  }
+              }
+          }
+          }
+          }
+          }
+          }))
+      True
+      eta_a2fo
+
+main2
+main2 =
+  \ x_a22x ->
+    case x_a22x of _ { D# x1_a2Aq ->
+    D# (-## (expDouble# x1_a2Aq) 2.0)
+    }
+
+main3
+main3 = \ x_a22u -> x_a22u
+
+main4
+main4 =
+  \ x_a22t ->
+    case x_a22t of _ { D# x1_aMe -> D# (-## (*## x1_aMe x1_aMe) 5.0) }
+
+main1
+main1 =
+  \ s_a2Ad ->
+    case main5 main4 s_a2Ad of _ { (# ipv_a2Ag, ipv1_a2Ah #) ->
+    case main5 main3 ipv_a2Ag of _ { (# ipv2_X2Ay, ipv3_X2AA #) ->
+    case main5 expDouble ipv2_X2Ay of _ { (# ipv4_X2AC, ipv5_X2AE #) ->
+    case main5 sinDouble ipv4_X2AC of _ { (# ipv6_X2AG, ipv7_X2AI #) ->
+    case main5 main2 ipv6_X2AG of _ { (# ipv8_X2AK, ipv9_X2AM #) ->
+    (# ipv8_X2AK,
+       : ipv1_a2Ah
+         (: ipv3_X2AA (: ipv5_X2AE (: ipv7_X2AI (: ipv9_X2AM ([]))))) #)
+    }
+    }
+    }
+    }
+    }
+
+main
+main = main1 `cast` ...
+
+main6
+main6 = \ eta_B1 -> runMainIO1 (main1 `cast` ...) eta_B1
+
+main
+main = main6 `cast` ...
+
+
+
+Linking Main ...
