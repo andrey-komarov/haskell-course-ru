@@ -13,6 +13,6 @@ funs = [f, f2, f3, f4, f5]
 
 main = do
     sequence $ map (\f -> 
-        let root = findRoot 1000 0.00001 10 20 f
+        let root = findRoot 0.000001 f 10
         in putStrLn $ "f " ++ show root ++ " = " ++ show (f root)
      ) funs

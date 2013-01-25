@@ -1,30 +1,44 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Fusion.Newton
     ( findRoot
-    , approx
     )
 where
 
 import Fusion.Common as F
 import Fusion.Internal
-import Fusion.Size
 
-approx :: Int -> Double -> Double -> Double -> (Double -> Double) -> Stream Double
-approx n eps x1 x2 f = Stream next (n, x2) unknownSize where
-    next (0, x) = Done
-    next (n, x) = let dx = (f x - f x1) / (x - x1)
-                      x' = x - f x / dx
-                  in if abs (f x) < eps
-                      then Done
-                      else Yield x' (n-1, x')
+--data T = T {-# UNPACK #-} !Double
+--           {-# UNPACK #-} !Double
 
-approx2 :: Int -> Double -> Double -> Double -> (Double -> Double) -> Stream Double
-approx2 n eps x1 x2 f = Stream next (n, x1, x2) unknownSize where
-    next (0, _, _) = Done
-    next (n, x, x1) = let dx = (f x - f x1) / (x - x1)
-                          x' = x - f x / dx
-                      in if abs (f x) < eps
+derivative :: Double -> (Double -> Double) -> Double -> Double
+derivative dx f x = (f (x + dx) - f (x - dx)) / (2 * dx)
+{-# INLINE [0] derivative #-}
+
+newtonStep :: (Double -> Double) -> (Double -> Double) -> Double -> Double
+newtonStep f df x = x - f x / df x
+{-# INLINE [0] newtonStep #-}
+
+findRoot :: Double -> (Double -> Double) -> Double -> Double
+findRoot eps f x0 = 
+    F.last $ F.takeWhile' ( (> eps) . abs . f )
+                       $ F.iterate (newtonStep f (derivative 0.001 f)) x0
+{-# INLINE [0] findRoot #-}
+
+{- approx :: Double -> Double -> Double -> (Double -> Double) -> Stream Double
+approx !eps !x1 !x2 !f = Stream next (T x1 x2) where
+    next (T x x1) = let dx = (f x - f x1) / (x - x1)
+                        {-# INLINE dx #-}
+                        x' = x - f x / dx
+                    in if abs (f x) < eps
                            then Done
-                           else Yield x' (n-1, x', x)
+                           else Yield x' (T x' x)
+    {-# INLINE next #-}
+{-# INLINE [0] approx #-}
+-}
 
-findRoot :: Int -> Double -> Double -> Double -> (Double -> Double) -> Double
-findRoot n eps x0 x1 f = F.last $ approx2 n eps x0 x1 f
+{-
+findRoot :: Double -> Double -> Double -> (Double -> Double) -> Double
+findRoot eps x0 x1 f = F.last $ approx eps x0 x1 f
+{-# INLINE [0] findRoot #-}
+-}
