@@ -13,11 +13,11 @@ import Fusion.Internal
 
 derivative :: Double -> (Double -> Double) -> Double -> Double
 derivative dx f x = (f (x + dx) - f (x - dx)) / (2 * dx)
-{-# INLINE [0] derivative #-}
+--{-# INLINE [0] derivative #-}
 
 newtonStep :: (Double -> Double) -> (Double -> Double) -> Double -> Double
 newtonStep f df x = x - f x / df x
-{-# INLINE [0] newtonStep #-}
+--{-# INLINE [0] newtonStep #-}
 
 findRoot :: Double -> (Double -> Double) -> Double -> Double
 findRoot eps f x0 = 

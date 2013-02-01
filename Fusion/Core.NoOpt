@@ -1,0 +1,210 @@
+[1 of 4] Compiling Fusion.Internal  ( ../Fusion/Internal.hs, ../Fusion/Internal.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 58, types: 85, coercions: 0}
+
+$WStream
+$WStream =
+  \ @ a_aeU @ s_aeV tpl_B1 tpl_B2 ->
+    case tpl_B2 of tpl_X7 { __DEFAULT -> Stream tpl_B1 tpl_X7 }
+
+$WSkip
+$WSkip =
+  \ @ s_aeW @ a_aeX tpl_B1 ->
+    case tpl_B1 of tpl_X5 { __DEFAULT -> Skip tpl_X5 }
+
+$WYield
+$WYield =
+  \ @ s_aeW @ a_aeX tpl_B1 tpl_B2 ->
+    case tpl_B1 of tpl_X6 { __DEFAULT ->
+    case tpl_B2 of tpl_X8 { __DEFAULT -> Yield tpl_X6 tpl_X8 }
+    }
+
+$W:*:
+$W:*: =
+  \ @ a_aeY @ b_aeZ tpl_B1 tpl_B2 ->
+    case tpl_B1 of tpl_X6 { __DEFAULT ->
+    case tpl_B2 of tpl_X8 { __DEFAULT -> :*: tpl_X6 tpl_X8 }
+    }
+
+$WJ
+$WJ =
+  \ @ a_af0 tpl_B1 -> case tpl_B1 of tpl_X4 { __DEFAULT -> J tpl_X4 }
+
+a_rfz
+a_rfz = \ @ a_m _ -> Done
+
+empty
+empty = \ @ a_m -> Stream (a_rfz) ()
+
+
+
+[2 of 4] Compiling Fusion.Common    ( ../Fusion/Common.hs, ../Fusion/Common.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 114, types: 137, coercions: 0}
+
+iterate
+iterate =
+  \ @ a_c eta_B2 eta1_B1 ->
+    let {
+      next_amK
+      next_amK =
+        \ eta2_X7 ->
+          case eta2_X7 of x_XmT { __DEFAULT ->
+          case eta_B2 x_XmT of tpl_X8 { __DEFAULT -> Yield x_XmT tpl_X8 }
+          } } in
+    case eta1_B1 of tpl_X7 { __DEFAULT -> Stream next_amK tpl_X7 }
+
+takeWhile'
+takeWhile' =
+  \ @ a_g eta_B2 eta1_B1 ->
+    case eta1_B1 of _ { Stream @ s_amR next_amA s_amB ->
+    let {
+      next'_amC
+      next'_amC =
+        \ eta2_Xc ->
+          case eta2_Xc of _ { (c_amD, s1_amE) ->
+          case next_amA s1_amE of _ {
+            Done -> Done;
+            Skip s'_amF -> Skip (c_amD, s'_amF);
+            Yield x_amG s'_amH ->
+              case eta_B2 x_amG of _ {
+                False ->
+                  case c_amD of _ {
+                    S1 -> Yield x_amG (S2, s'_amH);
+                    S2 -> Done
+                  };
+                True -> Yield x_amG (c_amD, s'_amH)
+              }
+          }
+          } } in
+    Stream next'_amC (S1, s_amB)
+    }
+
+last
+last =
+  \ @ a_j eta_B1 ->
+    case eta_B1 of _ { Stream @ s_amW next_aml s_amm ->
+    letrec {
+      last'_an0
+      last'_an0 =
+        \ s1_amp ->
+          case s1_amp of s2_Xms { __DEFAULT ->
+          case next_aml s2_Xms of _ {
+            Done -> error (unpackCString# "there is no last of empty stream");
+            Skip s'_amr -> last'_an0 s'_amr;
+            Yield x_ams s'_amt ->
+              letrec {
+                last''_amX
+                last''_amX =
+                  \ x1_amu s3_amv ->
+                    case x1_amu of x2_Xmy { __DEFAULT ->
+                    case s3_amv of s4_XmA { __DEFAULT ->
+                    case next_aml s4_XmA of _ {
+                      Done -> x2_Xmy;
+                      Skip s'1_amw -> last''_amX x2_Xmy s'1_amw;
+                      Yield x'_amx s'1_amy -> last''_amX x'_amx s'1_amy
+                    }
+                    }
+                    }; } in
+              last''_amX x_ams s'_amt
+          }
+          }; } in
+    last'_an0 s_amm
+    }
+
+
+
+[3 of 4] Compiling Fusion.Newton    ( ../Fusion/Newton.hs, ../Fusion/Newton.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 58, types: 46, coercions: 0}
+
+derivative_rxx
+derivative_rxx =
+  \ dx_axA f_axB x_axC ->
+    / $fFractionalDouble
+      (- $fNumDouble
+         (f_axB (+ $fNumDouble x_axC dx_axA))
+         (f_axB (- $fNumDouble x_axC dx_axA)))
+      (* $fNumDouble (D# 2.0) dx_axA)
+
+findRoot
+findRoot =
+  \ eta_B3 eta1_B2 eta2_B1 ->
+    $!
+      (last)
+      ($!
+         (takeWhile'
+            (. (\ ds_dDX -> > $fOrdDouble ds_dDX eta_B3)
+               (. (abs $fNumDouble) eta1_B2)))
+         (iterate
+            (let {
+               a_sE2
+               a_sE2 = D# 1.0e-3 } in
+             \ x_axW ->
+               - $fNumDouble
+                 x_axW
+                 (/ $fFractionalDouble
+                    (eta1_B2 x_axW)
+                    (derivative_rxx a_sE2 eta1_B2 x_axW)))
+            eta2_B1))
+
+
+
+[4 of 4] Compiling Main             ( Main.hs, Main.o )
+
+==================== Tidy Core ====================
+Result size of Tidy Core = {terms: 86, types: 85, coercions: 0}
+
+f5_rL7
+f5_rL7 =
+  \ @ a_aSW $dFloating_aSX eta_B1 ->
+    let {
+      a_sVV
+      a_sVV = $p1Floating $dFloating_aSX } in
+    let {
+      $dNum_aSC
+      $dNum_aSC = $p1Fractional a_sVV } in
+    - $dNum_aSC
+      (exp $dFloating_aSX eta_B1)
+      (fromInteger $dNum_aSC (__integer 2))
+
+f2_rL4
+f2_rL4 = \ @ t_aTE x_aLb -> x_aLb
+
+f_rL3
+f_rL3 =
+  \ @ a_aTR $dNum_aTS x_aLa ->
+    - $dNum_aTS
+      (* $dNum_aTS x_aLa x_aLa)
+      (fromInteger $dNum_aTS (__integer 5))
+
+main
+main =
+  $ (sequence $fMonadIO)
+    (map
+       (\ f1_aM2 ->
+          let {
+            root_aM3
+            root_aM3 = findRoot (D# 1.0e-6) f1_aM2 (D# 10.0) } in
+          $ putStrLn
+            (++
+               (unpackCString# "f ")
+               (++
+                  (show $fShowDouble root_aM3)
+                  (++
+                     (unpackCString# " = ") (show $fShowDouble (f1_aM2 root_aM3))))))
+       (: (f_rL3 $fNumDouble)
+          (: (f2_rL4)
+             (: (\ x_aLc -> exp $fFloatingDouble x_aLc)
+                (: (\ x_aLd -> sin $fFloatingDouble x_aLd)
+                   (: (f5_rL7 $fFloatingDouble) ([])))))))
+
+main
+main = runMainIO main
+
+
+
+Linking Main ...
