@@ -87,7 +87,8 @@ replLoop patience strategy = do
     putStrLn $ case t of
                 Left _ -> "incorrect"
                 Right (_, t) -> let 
-                    t' = strategy patience t 
+--                    t' = strategy patience t 
+                    t' = t
                     tp = infer t'
                     pp = prettyPrint t'
                     in case tp of

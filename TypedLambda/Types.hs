@@ -56,11 +56,13 @@ eqsSys' e@(Lam v e') = do
 patchSys :: State [Equation] (Maybe (Type, Type))
 patchSys = do
     eqs <- get
-    let fulleqs = do
+{-    let fulleqs = do
                     (e1, t1) <- eqs
                     (e2, t2) <- eqs
                     True <- return $ e1 == e2 && t1 /= t2
                     return (t1, t2)
+-}
+    let fulleqs = []
     let appeqs = do
                     (App a b, t1) <- eqs
                     (c, t2 :->: t3) <- eqs
