@@ -125,8 +125,79 @@ eval-lem2 (C x) .x refl = CC
 eval-lem2 (B x r r₁) .(do x (eval r) (eval r₁)) refl with eval-lem2 r (eval r) refl | eval-lem2 r₁ (eval r₁) refl
 ... | p | p2 = OPOP p p2
 
-{-
+tmp-lem : ∀ {l r l₂ r₂ n₁ n₂ op₁ op₂}
+  → l₂ a→ℕ n₁ 
+  → r₂ a→ℕ n₂
+  → B op₁ l r a→a B op₂ l₂ r₂
+  → B op₁ l r a→ℕ do op₂ n₁ n₂
+tmp-lem CC CC (LL' FF') = OPOP (OPOP CC CC) CC
+tmp-lem CC CC (RR' FF') = OPOP CC (OPOP CC CC)
+tmp-lem CC (OPOP p2 p3) (LL' FF') = OPOP (OPOP CC CC) (OPOP p2 p3)
+tmp-lem CC (OPOP p2 p3) (RR' (LL' x)) = OPOP CC (tmp-lem p2 p3 (LL' x))
+tmp-lem CC (OPOP p2 p3) (RR' (RR' x)) = OPOP CC (tmp-lem p2 p3 (RR' x))
+tmp-lem (OPOP p1 p2) CC (LL' (LL' x)) = OPOP (tmp-lem p1 p2 (LL' x)) CC
+tmp-lem (OPOP p1 p2) CC (LL' (RR' x)) = OPOP (tmp-lem p1 p2 (RR' x)) CC
+tmp-lem (OPOP p1 p2) CC (RR' FF') = OPOP (OPOP p1 p2) (OPOP CC CC)
+tmp-lem (OPOP p1 p2) (OPOP p3 p4) (LL' (LL' x)) = OPOP (tmp-lem p1 p2 (LL' x)) (OPOP p3 p4)
+tmp-lem (OPOP p1 p2) (OPOP p3 p4) (LL' (RR' x)) = OPOP (tmp-lem p1 p2 (RR' x)) (OPOP p3 p4)
+tmp-lem (OPOP p1 p2) (OPOP p3 p4) (RR' (LL' x)) = OPOP (OPOP p1 p2) (tmp-lem p3 p4 (LL' x))
+tmp-lem (OPOP p1 p2) (OPOP p3 p4) (RR' (RR' x)) = OPOP (OPOP p1 p2) (tmp-lem p3 p4 (RR' x))
 
+a→✴a-is-a→ℕ : ∀ r n 
+  → (_a→a_ ✴) r (C n) 
+  → r a→ℕ n
+a→✴a-is-a→ℕ .(C n) n stop = CC
+a→✴a-is-a→ℕ (C x) n (step () bc)
+a→✴a-is-a→ℕ (B x r₁ r₂) n (step {b = b} ab bc) with a→✴a-is-a→ℕ b n bc 
+a→✴a-is-a→ℕ (B x .(C n₁) .(C n₂)) .(do x n₁ n₂) (step (FF' {.x} {n₁} {n₂}) bc) | CC = OPOP CC CC
+a→✴a-is-a→ℕ (B x r₃ r₄) .(do op n₁ n₂) (step ab bc) | OPOP {op} {r₁} {r₂} {n₁} {n₂} pp pp₁ = tmp-lem pp pp₁ ab
+
+tmp-lem2 : ∀ {l r n op}
+  → (_a→a_ ✴) l (C n)
+  → l a→ℕ n
+  → (_a→a_ ✴) (B op l r) (B op (C n) r)
+tmp-lem2 stop CC = stop
+tmp-lem2 (step x p1) CC = stop
+tmp-lem2 {.(B op₁ r₁ r₂)}{bb}{.(do op₁ n₁ n₂)}{_}(step {b = b} x p1) (OPOP {op₁}{r₁}{r₂}{n₁}{n₂} p2 p3) with tmp-lem2 {b}{r₂}{do op₁ n₁ n₂}{op₁} p1 (a→✴a-is-a→ℕ b (do op₁ n₁ n₂) p1)
+tmp-lem2 (step op r₁) (OPOP p2 p3) | stop = step (LL' op) stop
+tmp-lem2 {.(B op₁ r₁ r₂)}{r = r}{op = op} (step {b = b₁} ab bc) (OPOP {op₁}{r₁}{r₂}{n₁}{n₂} p2 p3) | step {b = b} x pp = step (LL' ab) (tmp-lem2 bc (a→✴a-is-a→ℕ b₁ (do op₁ n₁ n₂) bc))
+
+tmp-lem3 : ∀ l r n op
+  → (_a→a_ ✴) r (C n)
+  → r a→ℕ n
+  → (_a→a_ ✴) (B op l r) (B op l (C n))
+tmp-lem3 l .(C n) n op stop CC = stop
+tmp-lem3 l .(C n) n op (step x p1) CC = stop
+tmp-lem3 l .(B op₁ r₁ r₂) .(do op₁ n₁ n₂) op (step {b = b} x p1) (OPOP {op₁} {r₁} {r₂} {n₁} {n₂} p2 p3) with tmp-lem3 r₂ b (do op₁ n₁ n₂) op₁ p1 (a→✴a-is-a→ℕ b (do op₁ n₁ n₂) p1)
+tmp-lem3 l .(B op₁ r₁ r₂) .(do op₁ n₁ n₂) op (step op₁ r₁) (OPOP {r₂} {x} {n₁} {n₂} p2 p3) | stop = step (RR' op₁) stop
+tmp-lem3 l .(B ab bc r₂) .(do ab n₁ n₂) op (step {b = b} ab bc) (OPOP {r₂} {x} {n₁} {n₂} {n₃} p2 p3) | step x₁ pp = step (RR' ab) (tmp-lem3 l b (do r₂ n₂ n₃) op bc (a→✴a-is-a→ℕ b (do r₂ n₂ n₃) bc))
+
+tmp-lem4 : ∀ {a b c}
+  → (_a→a_ ✴) a b
+  → (_a→a_ ✴) b c
+  → (_a→a_ ✴) a c
+tmp-lem4 stop stop = stop
+tmp-lem4 stop (step x p2) = step x p2
+tmp-lem4 (step x p1) stop = step x p1
+tmp-lem4 (step x p1) (step x₁ p2) = step x (tmp-lem4 p1 (step x₁ p2))
+
+tmp-lem5 : ∀ {l n₁ n₂ op}
+  → (_a→a_ ✴) l (B op (C n₁) (C n₂))
+  → (_a→a_ ✴) l (C do op n₁ n₂)
+tmp-lem5 stop = step FF' stop
+tmp-lem5 (step x p) = step x (tmp-lem5 p)
+
+a→ℕ-is-a→a : ∀ r n
+  → r a→ℕ n
+  → (_a→a_ ✴) r (C n)
+a→ℕ-is-a→a .(C n) n CC = stop
+a→ℕ-is-a→a .(B op r₁ r₂) .(do op n₁ n₂) (OPOP {op} {r₁} {r₂} {n₁} {n₂} p p₁) with a→ℕ-is-a→a r₁ n₁ p | a→ℕ-is-a→a r₂ n₂ p₁ 
+... | pp1 | pp2 with tmp-lem3 r₁ r₂ n₂ op pp2 p₁
+... | pp3 with tmp-lem2 {r₁}{C n₂}{n₁}{op} pp1 p
+... | pp4 with tmp-lem4 pp3 pp4
+... | pp5 = tmp-lem5 pp5
+
+{- 
 eval' : Arith → ℕ
 eval' (C x) = x
 eval' (B x (C x₁) r₁) = do x x₁ (eval' r₁)
